@@ -4,7 +4,7 @@ name: Deploy static content to Pages
 on:
   # Runs on pushes targeting the default branch
   push:
-    branches: ['master']
+    branches: ['master', 'development', 'badge-integration']
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -38,7 +38,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Build
-        run: npm run build --base=/open-event-checkin
+        run: npm run build
       - name: Fix router
         run: cp dist/index.html dist/404.html
       - name: Setup Pages

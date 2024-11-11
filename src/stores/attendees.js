@@ -24,7 +24,10 @@ export const useAttendeesStore = defineStore('attendees', () => {
       route += `email=${value}`
     }
     try {
-      const res = await apiStore.get(true, `events/${eventId}/attendees/search?sort=firstname&${route}`)
+      const res = await apiStore.get(
+        true,
+        `events/${eventId}/attendees/search?sort=firstname&${route}`
+      )
       attendees.value = res.attendees.map((attendee) => ({
         id: attendee.id,
         name: attendee.firstname + ' ' + attendee.lastname,

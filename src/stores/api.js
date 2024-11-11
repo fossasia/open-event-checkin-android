@@ -6,7 +6,7 @@ export const useApiStore = defineStore('api', () => {
     import.meta.env.MODE === 'production'
       ? import.meta.env.VITE_PROD_API_URL
       : import.meta.env.VITE_TEST_API_URL
-      
+
   let instance = mande(apiUrl)
 
   function setToken() {

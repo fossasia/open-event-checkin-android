@@ -4,21 +4,36 @@ import { useRouter } from 'vue-router'
 import { useLoadingStore } from '@/stores/loading'
 import { useAuthStore } from '@/stores/auth'
 import { useUserStore } from '@/stores/user'
+import { useEventyayApi } from '@/stores/eventyayapi'
 import StandardButton from '@/components/Common/StandardButton.vue'
 
 // stores
 const loadingStore = useLoadingStore()
 const authStore = useAuthStore()
 const userStore = useUserStore()
+const processApi = useEventyayApi()
 
 const email = ref('')
 const password = ref('')
+const server = ref('')
 const showError = ref(false)
-
+const showServerError = ref(false)
+const errmessage = ref('')
+const DEFAULT_SERVER_VALUE = 'Select a Server'
 // router
 const router = useRouter()
 
 async function submitLogin() {
+  if (server.value === '' || server.value === DEFAULT_SERVER_VALUE) {
+    showServerError.value = true
+    return
+  }
+  if (server.value === 'Eventyay') {
+    errmessage.value = 'Please Register a Device for Eventyay'
+    showServerError.value = true
+    return
+  }
+  showServerError.value = false
   loadingStore.contentLoading()
   showError.value = false
 
@@ -42,6 +57,28 @@ async function submitLogin() {
   loadingStore.contentLoaded()
 }
 
+function registerDevice() {
+  if (server.value === '' || server.value === 'Select a Server') {
+    errmessage.value = 'Please select a server first'
+    showServerError.value = true
+    return
+  }
+  if (server.value === 'Open-Event') {
+    errmessage.value = 'Please Login with credentials for Open-Event'
+    showServerError.value = true
+    return
+  }
+  showServerError.value = false
+  router.push({
+    name: 'device'
+  })
+}
+
+function handleRoleSelection(role) {
+  processApi.setRole(role)
+  registerDevice() // Store the selected role in the store
+}
+
 onMounted(() => {
   if (authStore.isAuthenticated) {
     router.push({
@@ -56,58 +93,44 @@ onMounted(() => {
 <template>
   <div class="-mt-16 flex h-screen flex-col justify-center">
     <div class="my-auto sm:mx-auto sm:w-full sm:max-w-sm">
-      <h2 class="text-center">Sign in to your account</h2>
-      <form class="mt-10 space-y-3" @submit.prevent="submitLogin">
+      <h2 class="text-center">Select Server and Purpose</h2>
+      <div class="mt-10 space-y-3">
         <div>
-          <label for="email">Email address</label>
-          <div class="mt-2">
-            <input
-              id="email"
-              v-model="email"
-              name="email"
-              type="email"
-              autocomplete="email"
-              required="true"
-              class="block w-full"
-            />
-          </div>
+          <label for="select">Select a Server</label>
+          <select id="select" v-model="server" class="mt-2 block w-full">
+            <option>Open-Event</option>
+            <option>Eventyay</option>
+            <option>Testing</option>
+          </select>
         </div>
-
-        <div>
-          <label for="password">Password</label>
-          <div class="mt-2">
-            <input
-              id="password"
-              v-model="password"
-              name="password"
-              type="password"
-              autocomplete="current-password"
-              required="true"
-              class="block w-full"
-            />
-          </div>
-        </div>
-
         <div>
           <StandardButton
-            :type="'submit'"
-            :text="'Login'"
+            type="button"
+            text="I am a Exhibitor"
             class="btn-primary mt-6 w-full justify-center"
+            @click="handleRoleSelection('Exhibitor')"
           />
         </div>
-
-        <div v-if="showError">
-          <p class="text-sm text-danger">Wrong credentials or account does not exist</p>
+        <div>
+          <StandardButton
+            type="button"
+            text="I am a Checkin Staff"
+            class="btn-primary mt-6 w-full justify-center"
+            @click="handleRoleSelection('CheckIn')"
+          />
         </div>
-      </form>
-
-      <p class="mt-10 text-center text-sm">
-        <span>Forgot password?</span>
-        {{ ' ' }}
-        <a href="https://eventyay.com/reset-password" class="font-medium leading-6 text-primary"
-          >Click here to reset password</a
-        >
-      </p>
+        <div>
+          <StandardButton
+            type="button"
+            text="Badge Printing Station"
+            class="btn-primary mt-6 w-full justify-center"
+            @click="handleRoleSelection('Badge Station')"
+          />
+        </div>
+      </div>
     </div>
+  </div>
+  <div v-if="showServerError" class="mt-5">
+    <p class="text-center text-sm text-danger">{{ errmessage }}</p>
   </div>
 </template>
